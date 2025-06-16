@@ -16,21 +16,45 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean compile -B -ntp'
             }
         }
 
-        // stage('Testing') {
-        //     steps {
-        //         sh 'mvn test'
-        //     }
-        //     post {
-        //         always {
-        //             junit 'target/surefire-reports/*.xml'
-        //             jacoco execPattern: 'target/jacoco.exec'
-        //         }
-        //     }
-        // }
+        stage('Testing') {
+            steps {
+                sh 'mvn test -B -ntp'
+            }
+            post {
+                success {
+                    junit 'target/surefire-reports/*.xml'
+                    // jacoco execPattern: 'target/jacoco.exec'
+                }
+                failure { 
+                    echo 'Tests failed!'
+                }
+            }
+        }
+        stage('Coverage') {
+            steps {
+                sh 'mvn jacoco:report -B -ntp'
+            }
+            post { 
+                success { 
+                    // recordCoverage(tools: [[parser: 'JACOCO']])
+
+
+                    discoverReferenceBuild()
+                    recordCoverage(
+                        tools: [[parser: 'JACOCO']],
+                        sourceCodeRetention: 'EVERY_BUILD',
+                        qualityGates: [
+                            [threshold: 60.0, metric: 'LINE', criticality: 'FAILURE'],
+                            // [threshold: 60.0, metric: 'BRANCH', criticality: 'FAILURE']
+                        ]
+                    )
+                }
+            }  
+        }
 
         // stage('SonarQube Analysis') {
         //     steps {
