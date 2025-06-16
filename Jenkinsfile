@@ -45,7 +45,7 @@ pipeline {
                         tools: [[parser: 'JACOCO']],
                         sourceCodeRetention: 'EVERY_BUILD',
                         qualityGates: [
-                            [threshold: 60.0, metric: 'LINE', criticality: 'FAILURE'],
+                            [threshold: 80.0, metric: 'LINE', criticality: 'FAILURE'],
                             // [threshold: 60.0, metric: 'BRANCH', criticality: 'FAILURE']
                         ]
                     )
