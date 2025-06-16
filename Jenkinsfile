@@ -41,9 +41,6 @@ pipeline {
             post { 
                 success { 
                     // recordCoverage(tools: [[parser: 'JACOCO']])
-
-
-                    discoverReferenceBuild()
                     recordCoverage(
                         tools: [[parser: 'JACOCO']],
                         sourceCodeRetention: 'EVERY_BUILD',
