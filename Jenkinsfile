@@ -59,7 +59,7 @@ pipeline {
                     withSonarQubeEnv('SonarQube') {
                         // Envía los datos a SonarQube incluyendo el umbral de cobertura
                         sh """
-                        mvn sonar:sonar \
+                        mvn sonar:sonar -B -ntp \
                           -Dsonar.projectKey=demo-calculator \
                           -Dsonar.host.url=$SONAR_HOST_URL \
                           -Dsonar.login=$SONAR_TOKEN \
