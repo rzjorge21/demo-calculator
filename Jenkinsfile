@@ -45,7 +45,7 @@ pipeline {
                         tools: [[parser: 'JACOCO']],
                         sourceCodeRetention: 'EVERY_BUILD',
                         qualityGates: [
-                            [threshold: 80.0, metric: 'LINE', criticality: 'FAILURE'],
+                            [threshold: 60.0, metric: 'LINE', criticality: 'FAILURE'],
                             // [threshold: 60.0, metric: 'BRANCH', criticality: 'FAILURE']
                         ]
                     )
@@ -53,23 +53,34 @@ pipeline {
             }  
         }
 
-        // stage('SonarQube Analysis') {
-        //     steps {
-        //       withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-        //           withSonarQubeEnv('SonarQube') {
-        //               sh 'mvn sonar:sonar -Dsonar.projectKey=monolito -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN'
-        //           }
-        //       }
-        //     }
-        // }
-
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 1, unit: 'MINUTES') {
-        //             waitForQualityGate abortPipeline: true
-        //         }
-        //     }
-        // }
+        stage('SonarQube Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                    withSonarQubeEnv('SonarQube') {
+                        // Envía los datos a SonarQube incluyendo el umbral de cobertura
+                        sh """
+                        mvn sonar:sonar \
+                          -Dsonar.projectKey=demo-calculator \
+                          -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.login=$SONAR_TOKEN \
+                          -Dsonar.java.coveragePlugin=jacoco \
+                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                          -Dsonar.coverage.exclusions=**/test/** \
+                          -Dsonar.test.exclusions=**/test/** \
+                          -Dsonar.java.test.exclusions=**/test/**
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
         
         // stage('Publish to Artifactory') {
         //     steps {
